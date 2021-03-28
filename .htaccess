@@ -1,7 +1,7 @@
 AddDefaultCharset UTF-8
 DirectoryIndex index.php index.html index.htm
 RewriteEngine On
-RewriteCond %{HTTP_HOST} www.hdclub.top
+RewriteCond %{HTTP_HOST} www.sytes
 #исправьте на адрес вашего сайта строчку ниже - sytes
 RewriteRule (.*) https://sytes/$1 [R=301,L]
 RewriteBase /
@@ -10,7 +10,7 @@ RewriteRule ^js/(.*\.js) combine.php?type=javascript&files=$1
 RewriteRule ^css/(.*\.css) combine.php?type=css&files=$1
 RewriteCond %{REQUEST_FILENAME} !-s
 RewriteCond %{HTTP_REFERER} !^$
-RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?hdclub.top [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?sytes [NC]
 RewriteRule \.(jpg|jpeg|png|gif|zip|torrent|txt)$ - [NC,F,L]
 #
 Options +FollowSymlinks
