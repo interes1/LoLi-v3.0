@@ -1,0 +1,98 @@
+AddDefaultCharset UTF-8
+DirectoryIndex index.php index.html index.htm
+RewriteEngine On
+RewriteCond %{HTTP_HOST} www.hdclub.top
+#исправьте на адрес вашего сайта строчку ниже - sytes
+RewriteRule (.*) https://sytes/$1 [R=301,L]
+RewriteBase /
+RewriteRule ^themes/TBDeV(.*\.css) combine.php?type=css&files=$1
+RewriteRule ^js/(.*\.js) combine.php?type=javascript&files=$1
+RewriteRule ^css/(.*\.css) combine.php?type=css&files=$1
+RewriteCond %{REQUEST_FILENAME} !-s
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?hdclub.top [NC]
+RewriteRule \.(jpg|jpeg|png|gif|zip|torrent|txt)$ - [NC,F,L]
+#
+Options +FollowSymlinks
+RewriteRule .* - [E=HTTP_IF_MODIFIED_SINCE:%{HTTP:If-Modified-Since}]
+RewriteRule .* - [E=HTTP_IF_NONE_MATCH:%{HTTP:If-None-Match}]
+# th23 start - error pages
+ErrorDocument 400 /401.html
+ErrorDocument 401 /401.html
+ErrorDocument 403 /401.html
+ErrorDocument 404 /401.html
+ErrorDocument 500 /401.html
+# th23 end - error pages
+<ifModule mod_gzip.c>
+  mod_gzip_on Yes
+  mod_gzip_dechunk Yes
+  mod_gzip_item_include file \.(html?|txt|css|js|php)$
+  mod_gzip_item_include handler ^cgi-script$
+  mod_gzip_item_include mime ^text/.*
+  mod_gzip_item_include mime ^application/x-javascript.*
+  mod_gzip_item_exclude mime ^image/.*
+  mod_gzip_item_exclude rspheader ^Content-Encoding:.*gzip.*
+</ifModule>
+# сжатие text, html, javascript, css, xml: 
+<ifModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/plain text/xml application/xml application/xhtml+xml text/css text/javascript application/javascript application/x-javascript
+</ifModule>
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 year"
+    #кэшируем флэш и изображения на месяц
+    ExpiresByType image/x-icon "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 4 weeks"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/gif "access plus 43829 minutes"
+    ExpiresByType application/x-shockwave-flash "access plus 2592000 seconds"
+    #кэшируем CSS, JavaScript и текстовые файлы на одну неделю
+    ExpiresByType text/css "access plus 604800 seconds"
+    ExpiresByType text/javascript "access plus 604800 seconds"
+    ExpiresByType application/javascript "access plus 604800 seconds"
+    ExpiresByType application/x-javascript "access plus 604800 seconds"
+    #кэшируем HTML и HTM файлы на один день
+    ExpiresByType text/html "access plus 43200 seconds"
+    #кэшируем XML файлы на десять минут
+    ExpiresByType application/xhtml+xml "access plus 600 seconds"
+</ifModule>
+<ifModule mod_headers.c>
+    #кэшировать HTML и HTM файлы на один день
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "max-age=43200"
+    </FilesMatch>
+    #кэшировать CSS, JavaScript и текстовые файлы на одну неделю
+    <FilesMatch "\.(js|css|txt)$">
+        Header set Cache-Control "max-age=604800"
+    </FilesMatch>
+    #кэшировать флэш и изображения на месяц
+    <FilesMatch "\.(ico|gif|jpg|jpeg|png)$">
+        Header set Cache-Control "max-age=2592000"
+    </FilesMatch>
+    #отключить кэширование
+    <FilesMatch "\.(pl|php|cgi|spl|scgi|fcgi)$">
+        Header unset Cache-Control
+    </FilesMatch>
+    <filesMatch "\.(ico|pdf|flv|jpg|jpeg|png|gif|js|css|swf)$">
+    Header unset ETag
+    FileETag None
+    </filesMatch>
+</ifModule>
+<ifModule mod_headers.c>
+Header unset Last-Modified
+</ifModule>
+FileETag MTime Size
+<IfModule mod_setenvif.c>
+BrowserMatch "MSIE" force-no-vary
+BrowserMatch "Mozilla/4.[0-9]{2}" force-no-vary
+</IfModule>
+#Включает отслеживание сим-ссылок
+Options +FollowSymLinks
+#Блокирует все ссылки, содержащие <script>
+RewriteCond %{QUERY_STRING} (\<|%3C).*script.*(\>|%3E) [NC,OR]
+#Блокирует все скрипты, которые пытаются изменить переменные PHP Globals:
+RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+#Блокирует все скрипты, которые пытаются изменить переменную _REQUEST:
+RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+#Перенаправляет все подобные попытки на страницу с ошибкой 403 - запрещено
+RewriteRule ^(.*)$ index.php [F,L]
